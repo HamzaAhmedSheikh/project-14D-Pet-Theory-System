@@ -1,0 +1,52 @@
+Arguments: 
+  C:\Program Files\nodejs\node.exe C:\Users\hamza\AppData\Roaming\npm\node_modules\yarn\bin\yarn.js add @aws-cdk/aws-appsync @aws-cdk/aws-events @aws-cdk/aws-events-targets
+
+PATH: 
+  C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\nodejs\;C:\Program Files\Git\cmd;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Java\jdk1.8.0_241\bin;F:\Program Files\Amazon\AWSCLIV2\;C:\Users\hamza\AppData\Local\Microsoft\WindowsApps;C:\Users\hamza\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\hamza\AppData\Roaming\npm;C:\Users\hamza\AppData\Local\Android\Sdk\platform-tools;C:\Program Files\MongoDB\Server\4.2\bin;C:\Users\hamza\AppData\Local\GitHubDesktop\bin;%USERPROFILE%\AppData\Local\Microsoft\WindowsApps;
+
+Yarn version: 
+  1.22.10
+
+Node version: 
+  12.13.0
+
+Platform: 
+  win32 x64
+
+Trace: 
+  Error: EBUSY: resource busy or locked, copyfile 'C:\Users\hamza\AppData\Local\Yarn\Cache\v6\npm-@cnakazawa-watch-1.0.4-f864ae85004d0fcab6f50be9141c4da368d1656a-integrity\node_modules\@cnakazawa\watch\cli.js' -> 'F:\full-stack-serverless-cdk\project-14D-Pet-Theory-System\pub-sub-backend\node_modules\@cnakazawa\watch\cli.js'
+
+npm manifest: 
+  {
+    "name": "pub-sub-backend",
+    "version": "0.1.0",
+    "bin": {
+      "pub-sub-backend": "bin/pub-sub-backend.js"
+    },
+    "scripts": {
+      "build": "tsc",
+      "watch": "tsc -w",
+      "test": "jest",
+      "cdk": "cdk"
+    },
+    "devDependencies": {
+      "@aws-cdk/assert": "1.98.0",
+      "@types/jest": "^26.0.10",
+      "@types/node": "10.17.27",
+      "aws-cdk": "1.98.0",
+      "jest": "^26.4.2",
+      "ts-jest": "^26.2.0",
+      "ts-node": "^9.0.0",
+      "typescript": "~3.9.7"
+    },
+    "dependencies": {
+      "@aws-cdk/core": "1.98.0",
+      "source-map-support": "^0.5.16"
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
