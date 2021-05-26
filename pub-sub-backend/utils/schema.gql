@@ -1,0 +1,27 @@
+type Event {
+    result: String!
+}
+
+type Report {
+    id: ID!
+    firstName: String!
+    lastName: String!
+    reportTitle: String!
+    desc: String!
+}
+
+input ReportInput {
+    firstName: String!
+    lastName: String!
+    reportTitle: String!
+    desc: String!
+}
+
+type Query {
+    getReports: [Report!]
+}
+
+type Mutation {
+    addReport(report: ReportInput!): Event
+    deleteReport(reportId: ID!): Event
+}
