@@ -25,6 +25,15 @@ export class PubSubBackendStack extends cdk.Stack {
       }
     });
 
+    // Create new AWS DynamoDB Table for pet-theory-system
+    const PetTheoryTable = new dynamoDB.Table(this, 'pet-theory-table', {
+      tableName: 'PetTable',
+      partitionKey: {
+        name: 'id',
+        type: dynamoDB.AttributeType.STRING,
+      },
+    });
+
 
   }
 }
