@@ -38,6 +38,15 @@ export class PubSubBackendStack extends cdk.Stack {
      ///Attaching Datasource to api
     const PetTheoryDS = petTheoryApi.addDynamoDbDataSource('pet-theoryTableEvent', PetTheoryTable);
 
+    const dynamoHandlerLambda = new lambda.Function(this, 'Dynamo_Handler', {
+      code: lambda.Code.fromAsset('lambda'),
+      runtime: lambda.Runtime.NODEJS_12_X,
+      handler: 'dynamoHandler.handler',
+      environment: {
+        DYNAMO_TABLE_NAME: PetTheoryTable.tableName,
+      },
+    });
+
     // HTTP as Datasource for the Graphql API
     //// Create Http Data source that will put our event to the eventbus    
     const httpEventTriggerDS = petTheoryApi.addHttpDataSource(
