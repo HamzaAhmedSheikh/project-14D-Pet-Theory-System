@@ -34,6 +34,28 @@ export class PubSubBackendStack extends cdk.Stack {
       },
     });
 
+     ///Attaching Datasource to api
+    const PetTheoryDS = petTheoryApi.addDynamoDbDataSource('pet-theoryTableEvent', PetTheoryTable);
+
+    // HTTP as Datasource for the Graphql API
+    //// Create Http Data source that will put our event to the eventbus
+    
+    const httpEventTriggerDS = petTheoryApi.addHttpDataSource(
+      "eventTriggerDS",
+      "https://events." + this.region + ".amazonaws.com/", // This is the ENDPOINT for eventbridge.
+      {
+        name: "httpDsWithEventBridge",
+        description: "From Appsync to Eventbridge",
+        authorizationConfig: {
+          signingRegion: this.region,
+          signingServiceName: "events",
+        },
+      }
+    );
+
+    events.EventBus.grantAllPutEvents(httpEventTriggerDS);
+
+    
 
   }
 }
