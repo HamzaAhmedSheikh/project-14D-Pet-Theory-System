@@ -15,8 +15,7 @@ export class PubSubBackendStack extends cdk.Stack {
 
     // The code that defines your stack goes here
 
-    /// APPSYNC API gives you a graphql api with api key
-    const petTheoryApi = new appsync.GraphqlApi(this, 'pet-theory-system', {
+    const PetTheoryApi = new appsync.GraphqlApi(this, 'apiforpettheorysystem', {
       name: 'appsyncPettheorysystem',
       schema: appsync.Schema.fromAsset('utils/schema.gql'),
       authorizationConfig: {
@@ -26,8 +25,8 @@ export class PubSubBackendStack extends cdk.Stack {
       }
     });
 
-    // Create new AWS DynamoDB Table for pet-theory-system
-    const PetTheoryTable = new dynamoDB.Table(this, 'pet-theory-table', {
+    // Create new DynamoDB Table for pet-theory-system
+    const PetTheoryTable = new dynamoDB.Table(this, 'RestaurantAppTable', {
       tableName: 'PetTable',
       partitionKey: {
         name: 'id',
@@ -35,8 +34,8 @@ export class PubSubBackendStack extends cdk.Stack {
       },
     });
 
-     ///Attaching Datasource to api
-    const PetTheoryDS = petTheoryApi.addDynamoDbDataSource('pet-theoryTableEvent', PetTheoryTable);
+    //define DS for quering reports
+    const PetTheoryDS = PetTheoryApi.addDynamoDbDataSource('forqueryreports', PetTheoryTable);
 
     const dynamoHandlerLambda = new lambda.Function(this, 'Dynamo_Handler', {
       code: lambda.Code.fromAsset('lambda'),
@@ -46,10 +45,12 @@ export class PubSubBackendStack extends cdk.Stack {
         DYNAMO_TABLE_NAME: PetTheoryTable.tableName,
       },
     });
+    
+    // Giving Table access to dynamoHandlerLambda
+    PetTheoryTable.grantReadWriteData(dynamoHandlerLambda);
 
     // HTTP as Datasource for the Graphql API
-    //// Create Http Data source that will put our event to the eventbus    
-    const httpEventTriggerDS = petTheoryApi.addHttpDataSource(
+    const httpEventTriggerDS = PetTheoryApi.addHttpDataSource(
       "eventTriggerDS",
       "https://events." + this.region + ".amazonaws.com/", // This is the ENDPOINT for eventbridge.
       {
@@ -61,11 +62,9 @@ export class PubSubBackendStack extends cdk.Stack {
         },
       }
     );
-
     events.EventBus.grantAllPutEvents(httpEventTriggerDS);
 
     ///////////////  APPSYNC  Resolvers   ///////////////
-
     /* Query */
     PetTheoryDS.createResolver({
       typeName: "Query",
@@ -90,6 +89,36 @@ export class PubSubBackendStack extends cdk.Stack {
         requestMappingTemplate: appsync.MappingTemplate.fromString(requestTemplate(details, mut)),
         responseMappingTemplate: appsync.MappingTemplate.fromString(responseTemplate()),
       });
+    });
+
+    // create an SNS topic
+    const myTopic = new sns.Topic(this, "my-topic");
+    // create a dead letter queue
+    const dlQueue = new sqs.Queue(this, "DeadLetterQueue", {
+      queueName: "MySubscription_DLQ",
+      //  retentionPeriod: cdk.Duration.days(14),
+    });
+    // subscribe email to the topic
+    myTopic.addSubscription(
+      new subscriptions.EmailSubscription('hamzaahmedsheikh313@gmail.com', {
+        json: false,
+        deadLetterQueue: dlQueue,
+      }),
+    );
+    // subscribe SMS number to the topic
+    myTopic.addSubscription(
+      new subscriptions.SmsSubscription("+923002240947", {
+        deadLetterQueue: dlQueue,
+      })
+    );
+
+    ////////// Creating rule to invoke step function on event ///////////////////////
+    new events.Rule(this, "eventConsumerRule", {
+      eventPattern: {
+        source: [EVENT_SOURCE],
+        detailType: [...mutations,],
+      },
+      targets: [new eventsTargets.LambdaFunction(dynamoHandlerLambda), new eventsTargets.SnsTopic(myTopic)]
     });
 
 
