@@ -15,7 +15,7 @@ export class PubSubBackendStack extends cdk.Stack {
 
     // The code that defines your stack goes here
 
-    const PetTheoryApi = new appsync.GraphqlApi(this, 'apiforpettheorysystem', {
+    const api = new appsync.GraphqlApi(this, 'apiforpettheorysystem', {
       name: 'appsyncPettheorysystem',
       schema: appsync.Schema.fromAsset('utils/schema.gql'),
       authorizationConfig: {
@@ -25,9 +25,18 @@ export class PubSubBackendStack extends cdk.Stack {
       }
     });
 
-    // Create new DynamoDB Table for pet-theory-system
-    const PetTheoryTable = new dynamoDB.Table(this, 'RestaurantAppTable', {
-      tableName: 'PetTable',
+    // // Create new DynamoDB Table for pet-theory-system
+    // const PetTheoryTable = new dynamoDB.Table(this, 'RestaurantAppTable', {
+    //   tableName: 'PetTable',
+    //   partitionKey: {
+    //     name: 'id',
+    //     type: dynamoDB.AttributeType.STRING,
+    //   },
+    // });
+
+    ///Defining a DynamoDB Table    
+    const todoTableEvent = new dynamoDB.Table(this, 'BookmarkAppEvent', {
+      billingMode: dynamoDB.BillingMode.PAY_PER_REQUEST,
       partitionKey: {
         name: 'id',
         type: dynamoDB.AttributeType.STRING,
@@ -35,22 +44,23 @@ export class PubSubBackendStack extends cdk.Stack {
     });
 
     //define DS for quering reports
-    const PetTheoryDS = PetTheoryApi.addDynamoDbDataSource('forqueryreports', PetTheoryTable);
+   // const PetTheoryDS = PetTheoryApi.addDynamoDbDataSource('forqueryreports', PetTheoryTable);
+      const bookmarkTable = api.addDynamoDbDataSource('todoAppTable', todoTableEvent);
 
     const dynamoHandlerLambda = new lambda.Function(this, 'Dynamo_Handler', {
       code: lambda.Code.fromAsset('lambda'),
       runtime: lambda.Runtime.NODEJS_12_X,
       handler: 'dynamoHandler.handler',
       environment: {
-        DYNAMO_TABLE_NAME: PetTheoryTable.tableName,
+        DYNAMO_TABLE_NAME: todoTableEvent.tableName,
       },
     });
     
     // Giving Table access to dynamoHandlerLambda
-    PetTheoryTable.grantReadWriteData(dynamoHandlerLambda);
+    todoTableEvent.grantReadWriteData(dynamoHandlerLambda);
 
     // HTTP as Datasource for the Graphql API
-    const httpEventTriggerDS = PetTheoryApi.addHttpDataSource(
+    const httpEventTriggerDS = api.addHttpDataSource(
       "eventTriggerDS",
       "https://events." + this.region + ".amazonaws.com/", // This is the ENDPOINT for eventbridge.
       {
@@ -66,7 +76,7 @@ export class PubSubBackendStack extends cdk.Stack {
 
     ///////////////  APPSYNC  Resolvers   ///////////////
     /* Query */
-    PetTheoryDS.createResolver({
+    bookmarkTable.createResolver({
       typeName: "Query",
       fieldName: "getReports",
       requestMappingTemplate: appsync.MappingTemplate.dynamoDbScanTable(),
