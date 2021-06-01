@@ -14,6 +14,8 @@ export class PubsubbackendStack extends cdk.Stack {
     super(scope, id, props);
 
     // The code that defines your stack goes here
+
+    /// APPSYNC API gives you a graphql api with api key
     const PetTheoryApi = new appsync.GraphqlApi(this, 'apiforpettheorysystem', {
       name: 'appsyncPettheorysystem',
       schema: appsync.Schema.fromAsset('utils/schema.gql'),
@@ -24,7 +26,7 @@ export class PubsubbackendStack extends cdk.Stack {
       }
     });
 
-    // Create new DynamoDB Table for Todos
+    // Defining a DynamoDB Table    
     const PetTheoryTable = new dynamoDB.Table(this, 'RestaurantAppTable', {
       tableName: 'PetTable',
       partitionKey: {
@@ -33,9 +35,10 @@ export class PubsubbackendStack extends cdk.Stack {
       },
     });
 
-    //define DS for quering reports
+    ///Attaching datasource to api
     const PetTheoryDS = PetTheoryApi.addDynamoDbDataSource('forqueryreports', PetTheoryTable);
 
+    // creating Lambda function
     const dynamoHandlerLambda = new lambda.Function(this, 'Dynamo_Handler', {
       code: lambda.Code.fromAsset('lambda'),
       runtime: lambda.Runtime.NODEJS_12_X,
@@ -44,11 +47,12 @@ export class PubsubbackendStack extends cdk.Stack {
         DYNAMO_TABLE_NAME: PetTheoryTable.tableName,
       },
     });
+    
     // Giving Table access to dynamoHandlerLambda
     PetTheoryTable.grantReadWriteData(dynamoHandlerLambda);
     PetTheoryTable.grantFullAccess(dynamoHandlerLambda);
 
-    // HTTP as Datasource for the Graphql API
+    // Create Http Data source that will put our event to the eventbus
     const httpEventTriggerDS = PetTheoryApi.addHttpDataSource(
       "eventTriggerDS",
       "https://events." + this.region + ".amazonaws.com/", // This is the ENDPOINT for eventbridge.
