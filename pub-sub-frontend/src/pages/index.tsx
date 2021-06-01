@@ -3,6 +3,7 @@ import { addReport } from "../graphql/mutations";
 import { getReports } from "../graphql/queries";
 import { API } from "aws-amplify";
 import { Container, Button, Input, Label, Heading } from 'theme-ui';
+import { AppBar, Box, Grid, makeStyles, TextField, Toolbar, Typography } from "@material-ui/core";
 
 export default function Home() {
   const [loading, setLoading] = useState(true);
@@ -57,7 +58,7 @@ export default function Home() {
 
   return (
     <Container>
-      {loading ? (
+      {loading ? (        
         <Heading sx={{ color: 'black', fontFamily: 'monospace', textAlign: "center" }}>Loading...</Heading>
       ) : (
           <div>
