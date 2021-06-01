@@ -98,18 +98,18 @@ export class PubsubbackendStack extends cdk.Stack {
       //  retentionPeriod: cdk.Duration.days(14),
     });
     // subscribe email to the topic
-    // myTopic.addSubscription(
-    //   new subscriptions.EmailSubscription('hamzaahmedsheikh313@gmail.com', {
-    //     json: false,
-    //     deadLetterQueue: dlQueue,
-    //   }),
-    // );
+    myTopic.addSubscription(
+      new subscriptions.EmailSubscription('hamzaahmedsheikh313@gmail.com', {
+        json: false,
+        deadLetterQueue: dlQueue,
+      }),
+    );
     // subscribe SMS number to the topic
-    // myTopic.addSubscription(
-    //   new subscriptions.SmsSubscription("+923002240947", {
-    //     deadLetterQueue: dlQueue,
-    //   })
-    // );
+    myTopic.addSubscription(
+      new subscriptions.SmsSubscription("+923002240947", {
+        deadLetterQueue: dlQueue,
+      })
+    );
 
     ////////// Creating rule to invoke step function on event ///////////////////////
     new events.Rule(this, "eventConsumerRule", {
