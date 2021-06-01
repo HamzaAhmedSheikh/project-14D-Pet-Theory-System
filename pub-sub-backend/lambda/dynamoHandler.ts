@@ -10,7 +10,7 @@ export const handler = async (event: EventBridgeEvent<string, any>, context: Con
         if (event["detail-type"] === "addReport") {
             const params = {
                 TableName: TABLE_NAME,
-                Item: { id: Math.random(), ...event.detail },
+                Item: { id: 'mk' + Math.random(), ...event.detail },
             }
             await dynamoClient.put(params).promise();
         }

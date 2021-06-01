@@ -1,6 +1,6 @@
 export const EVENT_SOURCE = "pub-sub-events"
 
-export const requestTemplate = (detail:string, detailType:string) => {
+export const requestTemplate = (detail:string, detailType:string)=>{
     return `{
         "version": "2018-05-29",
         "method": "POST",

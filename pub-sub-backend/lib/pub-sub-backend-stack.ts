@@ -9,13 +9,12 @@ import * as sqs from '@aws-cdk/aws-sqs';
 import * as subscriptions from '@aws-cdk/aws-sns-subscriptions';
 import { responseTemplate, requestTemplate, EVENT_SOURCE } from '../utils/appsync-request-response';
 
-export class PubSubBackendStack extends cdk.Stack {
+export class PubsubbackendStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
     // The code that defines your stack goes here
-
-    const api = new appsync.GraphqlApi(this, 'apiforpettheorysystem', {
+    const PetTheoryApi = new appsync.GraphqlApi(this, 'apiforpettheorysystem', {
       name: 'appsyncPettheorysystem',
       schema: appsync.Schema.fromAsset('utils/schema.gql'),
       authorizationConfig: {
@@ -25,18 +24,9 @@ export class PubSubBackendStack extends cdk.Stack {
       }
     });
 
-    // // Create new DynamoDB Table for pet-theory-system
-    // const PetTheoryTable = new dynamoDB.Table(this, 'RestaurantAppTable', {
-    //   tableName: 'PetTable',
-    //   partitionKey: {
-    //     name: 'id',
-    //     type: dynamoDB.AttributeType.STRING,
-    //   },
-    // });
-
-    ///Defining a DynamoDB Table    
-    const todoTableEvent = new dynamoDB.Table(this, 'BookmarkAppEvent', {
-      billingMode: dynamoDB.BillingMode.PAY_PER_REQUEST,
+    // Create new DynamoDB Table for Todos
+    const PetTheoryTable = new dynamoDB.Table(this, 'RestaurantAppTable', {
+      tableName: 'PetTable',
       partitionKey: {
         name: 'id',
         type: dynamoDB.AttributeType.STRING,
@@ -44,23 +34,22 @@ export class PubSubBackendStack extends cdk.Stack {
     });
 
     //define DS for quering reports
-   // const PetTheoryDS = PetTheoryApi.addDynamoDbDataSource('forqueryreports', PetTheoryTable);
-      const bookmarkTable = api.addDynamoDbDataSource('todoAppTable', todoTableEvent);
+    const PetTheoryDS = PetTheoryApi.addDynamoDbDataSource('forqueryreports', PetTheoryTable);
 
     const dynamoHandlerLambda = new lambda.Function(this, 'Dynamo_Handler', {
       code: lambda.Code.fromAsset('lambda'),
       runtime: lambda.Runtime.NODEJS_12_X,
       handler: 'dynamoHandler.handler',
       environment: {
-        DYNAMO_TABLE_NAME: todoTableEvent.tableName,
+        DYNAMO_TABLE_NAME: PetTheoryTable.tableName,
       },
     });
-    
     // Giving Table access to dynamoHandlerLambda
-    todoTableEvent.grantReadWriteData(dynamoHandlerLambda);
+    PetTheoryTable.grantReadWriteData(dynamoHandlerLambda);
+    PetTheoryTable.grantFullAccess(dynamoHandlerLambda);
 
     // HTTP as Datasource for the Graphql API
-    const httpEventTriggerDS = api.addHttpDataSource(
+    const httpEventTriggerDS = PetTheoryApi.addHttpDataSource(
       "eventTriggerDS",
       "https://events." + this.region + ".amazonaws.com/", // This is the ENDPOINT for eventbridge.
       {
@@ -76,7 +65,7 @@ export class PubSubBackendStack extends cdk.Stack {
 
     ///////////////  APPSYNC  Resolvers   ///////////////
     /* Query */
-    bookmarkTable.createResolver({
+    PetTheoryDS.createResolver({
       typeName: "Query",
       fieldName: "getReports",
       requestMappingTemplate: appsync.MappingTemplate.dynamoDbScanTable(),
@@ -102,37 +91,33 @@ export class PubSubBackendStack extends cdk.Stack {
     });
 
     // create an SNS topic
-    const myTopic = new sns.Topic(this, "my-topic");
+    const myTopic = new sns.Topic(this, "MyTopic");
     // create a dead letter queue
     const dlQueue = new sqs.Queue(this, "DeadLetterQueue", {
       queueName: "MySubscription_DLQ",
       //  retentionPeriod: cdk.Duration.days(14),
     });
     // subscribe email to the topic
-    myTopic.addSubscription(
-      new subscriptions.EmailSubscription('hamzaahmedsheikh313@gmail.com', {
-        json: false,
-        deadLetterQueue: dlQueue,
-      }),
-    );
+    // myTopic.addSubscription(
+    //   new subscriptions.EmailSubscription('hamzaahmedsheikh313@gmail.com', {
+    //     json: false,
+    //     deadLetterQueue: dlQueue,
+    //   }),
+    // );
     // subscribe SMS number to the topic
-    myTopic.addSubscription(
-      new subscriptions.SmsSubscription("+923002240947", {
-        deadLetterQueue: dlQueue,
-      })
-    );
+    // myTopic.addSubscription(
+    //   new subscriptions.SmsSubscription("+923002240947", {
+    //     deadLetterQueue: dlQueue,
+    //   })
+    // );
 
     ////////// Creating rule to invoke step function on event ///////////////////////
     new events.Rule(this, "eventConsumerRule", {
       eventPattern: {
         source: [EVENT_SOURCE],
-        detailType: [...mutations,],
+        detailType: [...mutations],
       },
       targets: [new eventsTargets.LambdaFunction(dynamoHandlerLambda), new eventsTargets.SnsTopic(myTopic)]
     });
-
-
-    
-
   }
 }
