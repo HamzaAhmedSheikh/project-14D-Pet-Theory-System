@@ -3,7 +3,16 @@ import { addReport } from "../graphql/mutations";
 import { getReports } from "../graphql/queries";
 import { API } from "aws-amplify";
 import { Container, Button, Input, Label, Heading } from 'theme-ui';
-import { AppBar, Box, Grid, makeStyles, TextField, Toolbar, Typography } from "@material-ui/core";
+import { AppBar, Box, Grid, TextField, Toolbar, Typography, makeStyles } from "@material-ui/core";
+
+
+const MyStyle = makeStyles(() => ({
+  title: {
+    flexGrow: 1,
+    textAlign: "center",
+    fontSize: "28px",    
+  },
+}));
 
 export default function Home() {
   const [loading, setLoading] = useState(true);
@@ -12,6 +21,8 @@ export default function Home() {
   const reportTitleRef = useRef<any>("");
   const reportFirstName = useRef<any>("");
   const reportLastName = useRef<any>("");
+  const classes = MyStyle();
+
 
   const submitReport = async () => {
     try {
@@ -62,15 +73,22 @@ export default function Home() {
         <Heading sx={{ color: 'black', fontFamily: 'monospace', textAlign: "center" }}>Loading...</Heading>
       ) : (
           <div>
-            <Heading sx={{ color: 'black', fontFamily: 'monospace', textAlign: "center" }}> Asynchronous PubSub Demo </Heading>
+            {/* <Heading sx={{ color: 'black', fontFamily: 'monospace', textAlign: "center" }}> Asynchronous PubSub Demo </Heading> */}
+            <AppBar position="static" color="primary">
+              <Toolbar>
+                <Typography variant="h6" className={classes.title}>
+                  <p className="heading"> Asynchronous PubSub Demo </p> 
+                </Typography>
+              </Toolbar>
+            </AppBar> 
             <Container p={4} bg='muted'>
-              <Label sx={{ color: 'black', fontFamily: 'monospace' }}> Enter your firstName </Label>
+              <Label sx={{ color: 'black', fontFamily: 'monospace', fontSize: '14px' }}> Enter your firstName </Label>
               <Input type="text" placeholder="First Name" ref={reportFirstName}/> <br />
-              <Label sx={{ color: 'black', fontFamily: 'monospace' }}> Enter your lastName </Label>
+              <Label sx={{ color: 'black', fontFamily: 'monospace', fontSize: '14px' }}> Enter your lastName </Label>
               <Input type="text" placeholder="Last Name" ref={reportLastName}/> <br />
-              <Label sx={{ color: 'black', fontFamily: 'monospace' }}> Enter your report title </Label>
+              <Label sx={{ color: 'black', fontFamily: 'monospace', fontSize: '14px' }}> Enter your report title </Label>
               <Input type="text" placeholder="Report Title" ref={reportTitleRef}/> <br />
-              <Label sx={{ color: 'black', fontFamily: 'monospace' }}> Enter your report description </Label>
+              <Label sx={{ color: 'black', fontFamily: 'monospace', fontSize: '14px' }}> Enter your report description </Label>
               <Input type="text" placeholder="Report Description" ref={reportDescRef}/> <br />
               <Button
                 sx={{ color: 'red', fontFamily: 'monospace', cursor: 'pointer' }}

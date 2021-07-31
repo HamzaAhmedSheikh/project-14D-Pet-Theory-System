@@ -95,7 +95,7 @@ export class PubsubbackendStack extends cdk.Stack {
     });
 
     // create an SNS topic
-    const myTopic = new sns.Topic(this, "MyTopic");
+    const myTopic = new sns.Topic(this, "MyTopic");    
     // create a dead letter queue
     const dlQueue = new sqs.Queue(this, "DeadLetterQueue", {
       queueName: "MySubscription_DLQ",
